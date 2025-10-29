@@ -18,15 +18,16 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // 🌄 Background Image of destination
-          Image.asset(
-            image,
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
+          Hero(
+            tag: title,
+            child: Image.asset(
+              image,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            ),
           ),
 
-          // 🌫 Gradient overlay
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -37,36 +38,44 @@ class DetailScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔙 Back and ❤️ Favorite Buttons
           Positioned(
-            top: 40,
+            top: 50,
             left: 20,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+            child: CircleAvatar(
+              backgroundColor: Colors.black.withOpacity(0.4),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
           ),
-          const Positioned(
-            top: 40,
-            right: 20,
-            child: Icon(Icons.favorite_border, color: Colors.white, size: 28),
-          ),
 
-          // 🏖 Destination Details at Bottom
+        Positioned(
+          top: 50,
+          right: 20,
+          child: CircleAvatar(
+            backgroundColor: Colors.black.withOpacity(0.4),
+            child: IconButton(
+              icon: const Icon(Icons.favorite_border, color: Colors.white),
+              onPressed: () {},
+            ),
+          ),
+        ),
+
           Positioned(
             bottom: 20,
             left: 20,
             right: 20,
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black26,
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+                    blurRadius: 15,
+                    offset: const Offset(0, -5),
                   ),
                 ],
               ),
@@ -80,34 +89,40 @@ class DetailScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
+                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
 
-                  // Location
-                  Text(
-                    location,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 15,
-                    ),
+
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, color: Colors.grey, size: 18),
+                      const SizedBox(width: 4),
+                      Text(
+                        location,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
 
-                  // Rating and Info Row
+
                   Row(
                     children: const [
                       Icon(Icons.star, color: Colors.amber, size: 20),
-                      SizedBox(width: 5),
-                      Text(
-                        "4.8  •  22°C  •  7 Days",
-                        style: TextStyle(color: Colors.grey),
-                      ),
+                      SizedBox(width: 6),
+                      Text("4.8", style: TextStyle(fontWeight: FontWeight.w600)),
+                      SizedBox(width: 8),
+                      Text("• 22°C • 7 Days", style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                   const SizedBox(height: 20),
 
-                  // Description
                   Text(
                     "Explore this beautiful location surrounded by natural landscapes, beaches, and unique culture. Perfect destination for relaxation and adventure.",
                     style: TextStyle(
@@ -118,7 +133,6 @@ class DetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 25),
 
-                  // 🟢 Book Now Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -127,7 +141,6 @@ class DetailScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => BookingScreen(
-                              // 👇 Now passes destination image to use as background
                               destinationTitle: title,
                               destinationImage: image,
                               destinationLocation: location,
@@ -136,11 +149,11 @@ class DetailScreen extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
+                        backgroundColor: Colors.black,
                         shape: const StadiumBorder(),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 4,
-                        shadowColor: Colors.tealAccent,
+                        shadowColor: Colors.black12,
                       ),
                       child: const Text(
                         "Book Now",

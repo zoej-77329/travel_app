@@ -20,10 +20,10 @@ class ProfileScreen extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  height: 220,
+                  height: 240,
                   decoration: BoxDecoration(
                     image: const DecorationImage(
-                      image: AssetImage("assets/images/travel6.jpg"),
+                      image: AssetImage("assets/images/travel2.jpg"),
                       fit: BoxFit.cover,
                     ),
                     borderRadius: const BorderRadius.only(
@@ -46,32 +46,39 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: -45,
+                  bottom: -55,
                   left: 0,
                   right: 0,
                   child: CircleAvatar(
-                    radius: 55,
+                    radius: 60,
                     backgroundColor: Colors.white,
                     child: CircleAvatar(
-                      radius: 50,
+                      radius: 55,
                       backgroundColor: Colors.grey.shade300,
-                      child: Icon(Icons.person, color: Colors.white, size: 50),
+                      child: const Icon(
+                        Icons.person,
+                        color: Colors.black,
+                        size: 55,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 70),
+
             const Text(
               "Rameen Asif",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             Text(
-              "Wanderlust | Explorer | Dreamer",
+              "Wanderlust • Explorer • Dreamer",
               style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
+
             const SizedBox(height: 25),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -83,9 +90,12 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 35),
+
+            // 🗺 Section Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
@@ -100,7 +110,10 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 15),
+
+            // 🖼 Horizontal Trip Cards
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -118,7 +131,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withOpacity(0.12),
                           blurRadius: 6,
                           offset: const Offset(0, 4),
                         ),
@@ -146,6 +159,7 @@ class ProfileScreen extends StatelessWidget {
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
+                              height: 1.3,
                             ),
                           ),
                         ),
@@ -155,7 +169,9 @@ class ProfileScreen extends StatelessWidget {
                 }).toList(),
               ),
             ),
-            const SizedBox(height: 40),
+
+            const SizedBox(height: 50),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: ElevatedButton(
@@ -166,6 +182,8 @@ class ProfileScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
+                  elevation: 4,
+                  shadowColor: Colors.black26,
                 ),
                 child: const Center(
                   child: Text(
@@ -175,7 +193,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+
+            const SizedBox(height: 50),
           ],
         ),
       ),
@@ -190,6 +209,13 @@ class ProfileScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Icon(icon, color: Colors.black87, size: 26),
         ),

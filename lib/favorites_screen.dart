@@ -9,17 +9,20 @@ class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
+        elevation: 2,
+          shadowColor: Colors.black.withOpacity(0.05),
+          centerTitle: true,
         title: const Text("Favorite Destinations", style: TextStyle(color: Colors.black)),
       ),
       body: favorites.isEmpty
-          ? const Center(child: Text("No favorites yet"))
+          ? const Center(child: Text("No favorites yet 💔",
+        style: TextStyle(fontSize: 18, color: Colors.grey),))
           : ListView.builder(
         itemCount: favorites.length,
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(16),
         itemBuilder: (context, index) {
           final item = favorites[index];
           return GestureDetector(
@@ -46,14 +49,38 @@ class FavoritesScreen extends StatelessWidget {
                 ),
               ),
               alignment: Alignment.bottomLeft,
-              padding: const EdgeInsets.all(15),
-              child: Text(
-                "${item["title"]}\n${item["location"]}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item["title"] ?? "",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(blurRadius: 6, color: Colors.black45),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on,
+                          color: Colors.white, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        item["location"] ?? "",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           );

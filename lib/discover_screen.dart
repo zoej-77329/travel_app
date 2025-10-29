@@ -43,24 +43,23 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ===== Header Row =====
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       Text("Los Angeles, CA", style: TextStyle(color: Colors.grey, fontSize: 14)),
-                      SizedBox(height: 5),
-                      Text("Discover New Destination",
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 6),
+                      Text("Discover ",
+                          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  // Profile icon - now navigates to ProfileScreen
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -71,15 +70,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     child: const CircleAvatar(
                       radius: 20,
                       backgroundColor: Colors.black12,
-                      child: Icon(Icons.person, color: Colors.black),
+                      child: Icon(Icons.notifications, color: Colors.black),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
-              // ===== Search Bar =====
               TextField(
                 decoration: InputDecoration(
                   hintText: "Search places",
@@ -88,28 +86,32 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   filled: true,
                   fillColor: Colors.grey.shade100,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide.none,
                   ),
                 ),
               ),
               const SizedBox(height: 20),
 
-              // ===== Category Buttons =====
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  buildCategoryButton("All"),
-                  buildCategoryButton("Beach"),
-                  buildCategoryButton("Mountain"),
-                  buildCategoryButton("City"),
-                  buildCategoryButton("Temple"),
-                ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    buildCategoryButton("All"),
+                    const SizedBox(width: 8),
+                    buildCategoryButton("Beach"),
+                    const SizedBox(width: 8),
+                    buildCategoryButton("Mountain"),
+                    const SizedBox(width: 8),
+                    buildCategoryButton("City"),
+                    const SizedBox(width: 8),
+                    buildCategoryButton("Temple"),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 25),
 
-              // ===== Destination Cards (Vertical) =====
               Column(
                 children: filteredDestinations.take(3).map((item) {
                   final isFav = widget.favorites.contains(item);
@@ -119,7 +121,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
               const SizedBox(height: 10),
 
-              // ===== Horizontal Scroll for More Destinations =====
               if (filteredDestinations.length > 3)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -131,7 +132,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ),
                 ),
 
-              // ===== Quote + Extra Cards =====
               if (selectedCategory == "All") ...[
                 const SizedBox(height: 25),
                 const Center(
@@ -158,7 +158,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  // ===== Category Button Widget =====
   Widget buildCategoryButton(String label) {
     final selected = selectedCategory == label;
     return GestureDetector(
@@ -181,7 +180,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  // ===== Destination Card Widget =====
   Widget buildDestinationCard(
       BuildContext context, Map<String, String> item, bool isFav, bool isHorizontal) {
     return GestureDetector(
@@ -235,7 +233,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  // ===== Stacked Card Widget =====
   Widget buildStackedCard(String imagePath, String title) {
     return Container(
       height: 180,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 
-// 🧳 Booking Screen (Beginner-Friendly)
 class BookingScreen extends StatelessWidget {
   final String destinationTitle;
   final String destinationImage;
@@ -18,7 +17,6 @@ class BookingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // 🌄 Background image
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(destinationImage),
@@ -26,25 +24,32 @@ class BookingScreen extends StatelessWidget {
           ),
         ),
         child: Container(
-          // Dark overlay for better text visibility
-          color: Colors.black.withOpacity(0.4),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.1),
+                Colors.black.withOpacity(0.1),
+              ],
+            ),
+          ),
           child: Column(
             children: [
-              const SizedBox(height: 50),
+              const SizedBox(height: 40),
 
-              // 🔙 Back button
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  CircleAvatar(
+                    backgroundColor: Colors.black.withOpacity(0.4),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ),
                 ],
               ),
 
-              // 🏞️ Destination title
               Text(
                 destinationTitle,
                 style: const TextStyle(
@@ -55,7 +60,6 @@ class BookingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // ✈️ Booking Form
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
@@ -72,15 +76,12 @@ class BookingScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
 
-                      // Full Name Field
                       _buildTextField("Full Name"),
                       const SizedBox(height: 15),
 
-                      // Email Field
                       _buildTextField("Email"),
                       const SizedBox(height: 15),
 
-                      // Dates Row (From / To)
                       Row(
                         children: [
                           Expanded(child: _buildTextField("From")),
@@ -90,11 +91,9 @@ class BookingScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 15),
 
-                      // Number of Travelers
                       _buildTextField("Number of Travelers"),
                       const SizedBox(height: 25),
 
-                      // ✅ Confirm Booking Button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -107,7 +106,7 @@ class BookingScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.tealAccent.shade700,
+                            backgroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
@@ -134,7 +133,6 @@ class BookingScreen extends StatelessWidget {
     );
   }
 
-  // 🧩 Helper Method to Create Reusable Text Fields
   Widget _buildTextField(String label) {
     return TextField(
       style: const TextStyle(color: Colors.white),
@@ -142,7 +140,7 @@ class BookingScreen extends StatelessWidget {
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white70),
         filled: true,
-        fillColor: Colors.black.withOpacity(0.4),
+        fillColor: Colors.black.withOpacity(0.5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -152,21 +150,19 @@ class BookingScreen extends StatelessWidget {
   }
 }
 
-// 🎉 Booking Success Screen (in the same file)
 class BookingSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // Background success image
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/success_bg.jpg'),
+            image: AssetImage('assets/images/travel4.jpg'),
             fit: BoxFit.cover,
           ),
         ),
         child: Container(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withOpacity(0.3),
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(30.0),
@@ -177,10 +173,14 @@ class BookingSuccessScreen extends StatelessWidget {
                   const SizedBox(height: 25),
                   const Text(
                     "Booking Confirmed!",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 35,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      shadows: [
+                        Shadow(blurRadius: 10, color: Colors.black54),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -191,7 +191,6 @@ class BookingSuccessScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
 
-                  // 🔙 Back to Home Button
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pushReplacement(
@@ -202,7 +201,7 @@ class BookingSuccessScreen extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
+                      backgroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 50,
                         vertical: 14,
