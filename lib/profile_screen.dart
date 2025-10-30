@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'edit_profile.dart';
 
 class ProfileScreen extends StatelessWidget {
   final List<Map<String, String>> myTrips = [
@@ -93,7 +94,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 35),
 
-            // 🗺 Section Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
@@ -113,7 +113,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 15),
 
-            // 🖼 Horizontal Trip Cards
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -175,7 +174,12 @@ class ProfileScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
