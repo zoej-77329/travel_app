@@ -1,20 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'edit_profile.dart';
 
-class ProfileScreen extends StatelessWidget {
-  final List<Map<String, String>> myTrips = [
-    {"image": "assets/images/travel7.jpg", "title": "Santorini", "location": "Greece"},
-    {"image": "assets/images/travel8.jpg", "title": "Swiss Alps", "location": "Switzerland"},
-    {"image": "assets/images/travel11.jpg", "title": "New York City", "location": "USA"},
-  ];
-
+class ProfileScreen extends StatefulWidget {
   ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? userData;
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid)
+        .get();
+
+    if (mounted) {
+      setState(() {
+        userData = doc.data();
+        loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Column(
           children: [
             Stack(
@@ -39,13 +68,18 @@ class ProfileScreen extends StatelessWidget {
                         bottomRight: Radius.circular(30),
                       ),
                       gradient: LinearGradient(
-                        colors: [Colors.black.withOpacity(0.4), Colors.transparent],
+                        colors: [
+                          Colors.black.withValues(alpha: 0.4),
+                          Colors.transparent
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
                     ),
                   ),
                 ),
+
+                // Profile Picture
                 Positioned(
                   bottom: -55,
                   left: 0,
@@ -56,26 +90,34 @@ class ProfileScreen extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 55,
                       backgroundColor: Colors.grey.shade300,
-                      child: const Icon(
-                        Icons.person,
-                        color: Colors.black,
-                        size: 55,
-                      ),
+                      backgroundImage: userData?['photoUrl'] != null
+                          ? NetworkImage(userData!['photoUrl'])
+                          : null,
+                      child: userData?['photoUrl'] == null
+                          ? const Icon(Icons.person,
+                          color: Colors.black, size: 55)
+                          : null,
                     ),
                   ),
                 ),
               ],
             ),
+
             const SizedBox(height: 70),
 
-            const Text(
-              "Rameen Asif",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
+            // USER NAME
             Text(
-              "Wanderlust • Explorer • Dreamer",
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              userData?['name'] ?? "User",
+              style: const TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              userData?['bio'] ?? "Wanderlust • Explorer • Dreamer",
+              style:
+              TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
 
             const SizedBox(height: 25),
@@ -85,8 +127,10 @@ class ProfileScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatCard(Icons.flight_takeoff, "Trips", "24"),
-                  _buildStatCard(Icons.favorite, "Favorites", "8"),
+                  _buildStatCard(Icons.flight_takeoff, "Trips",
+                      "${userData?['trips']?.length ?? 0}"),
+                  _buildStatCard(Icons.favorite, "Favorites",
+                      "${userData?['favorites']?.length ?? 0}"),
                   _buildStatCard(Icons.reviews, "Reviews", "12"),
                 ],
               ),
@@ -94,6 +138,7 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 35),
 
+            // My Trips Section (unchanged UI)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
@@ -101,7 +146,8 @@ class ProfileScreen extends StatelessWidget {
                 children: const [
                   Text(
                     "My Trips",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     "View all",
@@ -117,7 +163,7 @@ class ProfileScreen extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
-                children: myTrips.map((trip) {
+                children: (userData?['trips'] ?? []).map<Widget>((trip) {
                   return Container(
                     margin: const EdgeInsets.only(right: 15),
                     width: 160,
@@ -125,42 +171,14 @@ class ProfileScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
-                        image: AssetImage(trip["image"]!),
+                        image: NetworkImage(trip["image"]),
                         fit: BoxFit.cover,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black.withValues(alpha: 0.12),
                           blurRadius: 6,
                           offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              colors: [Colors.black.withOpacity(0.5), Colors.transparent],
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 15,
-                          left: 15,
-                          right: 15,
-                          child: Text(
-                            "${trip["title"]}\n${trip["location"]}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              height: 1.3,
-                            ),
-                          ),
                         ),
                       ],
                     ),
@@ -177,7 +195,9 @@ class ProfileScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                    MaterialPageRoute(
+                        builder: (context) =>
+                        const EditProfileScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -192,7 +212,8 @@ class ProfileScreen extends StatelessWidget {
                 child: const Center(
                   child: Text(
                     "Edit Profile",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style:
+                    TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
@@ -215,7 +236,7 @@ class ProfileScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),

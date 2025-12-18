@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:travel_app/detail_screen.dart';
 import 'package:travel_app/profile_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DiscoverScreen extends StatefulWidget {
   final Function(Map<String, String>) onFavoriteToggle;
@@ -18,26 +20,123 @@ class DiscoverScreen extends StatefulWidget {
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
   String selectedCategory = "All";
+  String searchQuery = "";
+  final TextEditingController _searchController = TextEditingController();
+
+  // Firebase instances
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final List<Map<String, String>> allDestinations = [
-    {"image": "assets/images/travel4.jpg", "title": "Nusa Penida", "location": "Bali, Indonesia", "category": "Beach"},
-    {"image": "assets/images/travel6.jpg", "title": "Haathim Beach", "location": "Maldives", "category": "Beach"},
-    {"image": "assets/images/travel5.jpg", "title": "Turquoise Bay", "location": "Australia", "category": "Beach"},
-    {"image": "assets/images/travel3.jpg", "title": "Patnem Beach", "location": "Goa, India", "category": "Beach"},
-    {"image": "assets/images/travel7.jpg", "title": "Santorini", "location": "Greece", "category": "City"},
-    {"image": "assets/images/travel8.jpg", "title": "Swiss Alps", "location": "Switzerland", "category": "Mountain"},
-    {"image": "assets/images/travel9.jpg", "title": "Banff", "location": "Canada", "category": "Mountain"},
-    {"image": "assets/images/travel10.jpg", "title": "Kyoto Temples", "location": "Japan", "category": "Temple"},
-    {"image": "assets/images/travel11.jpg", "title": "New York City", "location": "USA", "category": "City"},
-    {"image": "assets/images/travel12.jpg", "title": "Angkor Wat", "location": "Cambodia", "category": "Temple"},
-    {"image": "assets/images/travel13.jpg", "title": "Paris", "location": "France", "category": "City"},
+    {"id": "1", "image": "assets/images/travel4.jpg", "title": "Nusa Penida", "location": "Bali, Indonesia", "category": "Beach"},
+    {"id": "2", "image": "assets/images/travel6.jpg", "title": "Haathim Beach", "location": "Maldives", "category": "Beach"},
+    {"id": "3", "image": "assets/images/travel5.jpg", "title": "Turquoise Bay", "location": "Australia", "category": "Beach"},
+    {"id": "4", "image": "assets/images/travel3.jpg", "title": "Patnem Beach", "location": "Goa, India", "category": "Beach"},
+    {"id": "5", "image": "assets/images/travel7.jpg", "title": "Santorini", "location": "Greece", "category": "City"},
+    {"id": "6", "image": "assets/images/travel8.jpg", "title": "Swiss Alps", "location": "Switzerland", "category": "Mountain"},
+    {"id": "7", "image": "assets/images/travel9.jpg", "title": "Banff", "location": "Canada", "category": "Mountain"},
+    {"id": "8", "image": "assets/images/travel10.jpg", "title": "Kyoto Temples", "location": "Japan", "category": "Temple"},
+    {"id": "9", "image": "assets/images/travel11.jpg", "title": "New York City", "location": "USA", "category": "City"},
+    {"id": "10", "image": "assets/images/travel12.jpg", "title": "Angkor Wat", "location": "Cambodia", "category": "Temple"},
+    {"id": "11", "image": "assets/images/travel13.jpg", "title": "Paris", "location": "France", "category": "City"},
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _initializeFirebaseData();
+  }
+
+  // Initialize Firebase data
+  Future<void> _initializeFirebaseData() async {
+    try {
+      // Upload destinations to Firestore if not already present
+      final destinationsSnapshot = await _firestore.collection('destinations').get();
+
+      if (destinationsSnapshot.docs.isEmpty) {
+        for (var destination in allDestinations) {
+          // Use the id from the map as the document ID
+          await _firestore.collection('destinations').doc(destination['id']).set({
+            'title': destination['title'],
+            'image': destination['image'],
+            'location': destination['location'],
+            'category': destination['category'],
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error initializing Firebase data: $e');
+    }
+  }
+
+  // Save favorite to Firebase
+  Future<void> _saveFavoriteToFirebase(Map<String, String> destination, bool isFavorite) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final favoriteRef = _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('favorites')
+            .doc(destination['id']);
+
+        if (isFavorite) {
+          await favoriteRef.set({
+            'id': destination['id'] ?? '',
+            'title': destination['title'] ?? '',
+            'image': destination['image'] ?? '',
+            'location': destination['location'] ?? '',
+            'category': destination['category'] ?? '',
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        } else {
+          await favoriteRef.delete();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error saving favorite: $e');
+    }
+  }
+
+  // Log user activity to Firebase
+  Future<void> _logUserActivity(String activity, Map<String, dynamic> data) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore.collection('user_activity').add({
+          'userId': user.uid,
+          'activity': activity,
+          'data': data,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      debugPrint('Error logging activity: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final filteredDestinations = selectedCategory == "All"
+    // Filter by category
+    var filteredDestinations = selectedCategory == "All"
         ? allDestinations
         : allDestinations.where((d) => d["category"] == selectedCategory).toList();
+
+    // Filter by search query
+    if (searchQuery.isNotEmpty) {
+      filteredDestinations = filteredDestinations.where((d) {
+        final title = d["title"]?.toLowerCase() ?? "";
+        final location = d["location"]?.toLowerCase() ?? "";
+        final query = searchQuery.toLowerCase();
+        return title.contains(query) || location.contains(query);
+      }).toList();
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -112,12 +211,23 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
               const SizedBox(height: 25),
 
-              Column(
-                children: filteredDestinations.take(3).map((item) {
-                  final isFav = widget.favorites.contains(item);
-                  return buildDestinationCard(context, item, isFav, false);
-                }).toList(),
-              ),
+              if (filteredDestinations.isEmpty)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: Text(
+                      "No destinations found 🔍",
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ),
+                )
+              else
+                Column(
+                  children: filteredDestinations.take(3).map((item) {
+                    final isFav = widget.favorites.contains(item);
+                    return buildDestinationCard(context, item, isFav, false);
+                  }).toList(),
+                ),
 
               const SizedBox(height: 10),
 
@@ -136,7 +246,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 const SizedBox(height: 25),
                 const Center(
                   child: Text(
-                    "“Travel far, explore often, and live fully.”",
+                    "Travel far, explore often, and live fully.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 19, fontWeight: FontWeight.w700, color: Colors.black87),
@@ -165,6 +275,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         setState(() {
           selectedCategory = label;
         });
+        // Log category selection to Firebase
+        _logUserActivity('category_selected', {'category': label});
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
@@ -184,10 +296,19 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       BuildContext context, Map<String, String> item, bool isFav, bool isHorizontal) {
     return GestureDetector(
       onTap: () {
+        // Log destination view to Firebase
+        _logUserActivity('destination_viewed', {
+          'id': item['id'],
+          'title': item['title'],
+          'location': item['location'],
+          'category': item['category'],
+        });
+
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => DetailScreen(
+              id: item["id"]!,
               title: item["title"]!,
               image: item["image"]!,
               location: item["location"]!,
@@ -220,7 +341,16 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               top: 10,
               right: 10,
               child: GestureDetector(
-                onTap: () => widget.onFavoriteToggle(item),
+                onTap: () {
+                  widget.onFavoriteToggle(item);
+                  // Save favorite status to Firebase
+                  _saveFavoriteToFirebase(item, !isFav);
+                  _logUserActivity('favorite_toggled', {
+                    'id': item['id'],
+                    'title': item['title'],
+                    'isFavorite': !isFav,
+                  });
+                },
                 child: Icon(
                   isFav ? Icons.favorite : Icons.favorite_border,
                   color: isFav ? Colors.red : Colors.white,

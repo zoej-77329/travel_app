@@ -106,11 +106,22 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // ⬆ Two upward arrows
-                            const Icon(Icons.keyboard_arrow_up,
-                                color: Colors.white, size: 28),
-                            const Icon(Icons.keyboard_arrow_up,
-                                color: Colors.white, size: 28),
+
+                            AnimatedBuilder(
+                              animation: _animation,
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset: Offset(0, _animation.value),
+                                  child: child,
+                                );
+                              },
+                              child: Column(
+                                children: const [
+                                  Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 28),
+                                  Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 28),
+                                ],
+                              ),
+                            ),
 
                             const SizedBox(height: 10),
 

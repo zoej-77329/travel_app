@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'invoice_screen.dart';
 
-class BookingScreen extends StatelessWidget {
+class BookingScreen extends StatefulWidget {
   final String destinationTitle;
   final String destinationImage;
   final String destinationLocation;
@@ -14,12 +16,56 @@ class BookingScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<BookingScreen> createState() => _BookingScreenState();
+}
+
+class _BookingScreenState extends State<BookingScreen> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _fromController = TextEditingController();
+  final _toController = TextEditingController();
+  final _travelersController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _setCurrentLocation();
+  }
+
+  Future<void> _setCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+    if (permission == LocationPermission.deniedForever) return;
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      List<Placemark> placemarks =
+      await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _fromController.text = "${place.locality}, ${place.country}";
+        });
+      }
+    } catch (e) {
+      // ignore errors
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(destinationImage),
+            image: AssetImage(widget.destinationImage),
             fit: BoxFit.cover,
           ),
         ),
@@ -30,28 +76,27 @@ class BookingScreen extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.black.withOpacity(0.1),
-                Colors.black.withOpacity(0.1),
+                Colors.black.withOpacity(0.4),
               ],
             ),
           ),
           child: Column(
             children: [
-              const SizedBox(height: 40),
-
+              const SizedBox(height: 50),
               Row(
                 children: [
                   CircleAvatar(
                     backgroundColor: Colors.black.withOpacity(0.4),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
                 ],
               ),
-
               Text(
-                destinationTitle,
+                widget.destinationTitle,
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -59,7 +104,6 @@ class BookingScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
@@ -75,39 +119,53 @@ class BookingScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      _buildTextField("Full Name"),
+                      _buildTextField("Full Name", _nameController),
                       const SizedBox(height: 15),
-
-                      _buildTextField("Email"),
+                      _buildTextField("Email", _emailController),
                       const SizedBox(height: 15),
-
                       Row(
                         children: [
-                          Expanded(child: _buildTextField("From")),
+                          Expanded(
+                              child: _buildTextField("From", _fromController)),
+                          IconButton(
+                            icon: const Icon(Icons.my_location,
+                                color: Colors.white),
+                            onPressed: _setCurrentLocation,
+                          ),
                           const SizedBox(width: 10),
-                          Expanded(child: _buildTextField("To")),
+                          Expanded(
+                              child: _buildTextField("To", _toController)),
                         ],
                       ),
                       const SizedBox(height: 15),
-
-                      _buildTextField("Number of Travelers"),
+                      _buildTextField(
+                          "Number of Travelers", _travelersController),
                       const SizedBox(height: 25),
-
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
+                            final int travelers =
+                                int.tryParse(_travelersController.text) ?? 1;
+                            final int price = travelers * 50000;
+
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => BookingSuccessScreen(),
+                                builder: (context) => BookingSuccessScreen(
+                                  destination: widget.destinationTitle,
+                                  from: _fromController.text,
+                                  to: _toController.text,
+                                  travelers: travelers,
+                                  price: price,
+                                ),
                               ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -133,8 +191,9 @@ class BookingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return TextField(
+      controller: controller,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
@@ -150,7 +209,23 @@ class BookingScreen extends StatelessWidget {
   }
 }
 
+/// 🔹 BookingSuccessScreen stays INSIDE this file, exactly like your original code
 class BookingSuccessScreen extends StatelessWidget {
+  final String destination;
+  final String from;
+  final String to;
+  final int travelers;
+  final int price;
+
+  const BookingSuccessScreen({
+    super.key,
+    required this.destination,
+    required this.from,
+    required this.to,
+    required this.travelers,
+    required this.price,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,7 +271,13 @@ class BookingSuccessScreen extends StatelessWidget {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
+                          builder: (context) => InvoiceScreen(
+                            destination: destination,
+                            from: from,
+                            to: to,
+                            travelers: travelers,
+                            price: price,
+                          ),
                         ),
                       );
                     },
@@ -211,7 +292,7 @@ class BookingSuccessScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      "Back to Home",
+                      "View Invoice",
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
