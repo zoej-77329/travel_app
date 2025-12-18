@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'edit_profile.dart';
 
 class ProfileScreen extends StatefulWidget {
-  ProfileScreen({super.key});
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -46,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           : SingleChildScrollView(
         child: Column(
           children: [
+            // ================= HEADER =================
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -69,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       gradient: LinearGradient(
                         colors: [
-                          Colors.black.withValues(alpha: 0.4),
+                          Colors.black.withOpacity(0.4),
                           Colors.transparent
                         ],
                         begin: Alignment.bottomCenter,
@@ -79,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
 
-                // Profile Picture
+                // ================= PROFILE IMAGE =================
                 Positioned(
                   bottom: -55,
                   left: 0,
@@ -105,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 70),
 
-            // USER NAME
+            // ================= NAME =================
             Text(
               userData?['name'] ?? "User",
               style: const TextStyle(
@@ -114,6 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 6),
 
+            // ================= BIO =================
             Text(
               userData?['bio'] ?? "Wanderlust • Explorer • Dreamer",
               style:
@@ -122,23 +124,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 25),
 
+            // ================= STATS =================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatCard(Icons.flight_takeoff, "Trips",
-                      "${userData?['trips']?.length ?? 0}"),
-                  _buildStatCard(Icons.favorite, "Favorites",
-                      "${userData?['favorites']?.length ?? 0}"),
-                  _buildStatCard(Icons.reviews, "Reviews", "12"),
+                  _buildStatCard(
+                    Icons.flight_takeoff,
+                    "Trips",
+                    "${userData?['trips']?.length ?? 0}",
+                  ),
+                  _buildStatCard(
+                    Icons.favorite,
+                    "Favorites",
+                    "${userData?['favorites']?.length ?? 0}",
+                  ),
+                  _buildStatCard(
+                    Icons.reviews,
+                    "Reviews",
+                    "12",
+                  ),
                 ],
               ),
             ),
 
             const SizedBox(height: 35),
 
-            // My Trips Section (unchanged UI)
+            // ================= MY TRIPS HEADER =================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
@@ -159,6 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 15),
 
+            // ================= MY TRIPS LIST (EXACT SAME UI) =================
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -176,9 +190,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
+                          color:
+                          Colors.black.withOpacity(0.12),
                           blurRadius: 6,
                           offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black.withOpacity(0.5),
+                                Colors.transparent
+                              ],
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 15,
+                          left: 15,
+                          right: 15,
+                          child: Text(
+                            "${trip['title']}\n${trip['location']}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              height: 1.3,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -189,31 +235,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 50),
 
+            // ================= EDIT BUTTON =================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final updatedData = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                        const EditProfileScreen()),
+                      builder: (context) =>
+                      const EditProfileScreen(),
+                    ),
                   );
+
+                  if (updatedData != null && mounted) {
+                    setState(() {
+                      userData = {
+                        ...?userData,
+                        ...updatedData,
+                      };
+                    });
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 14),
                   elevation: 4,
                   shadowColor: Colors.black26,
                 ),
                 child: const Center(
                   child: Text(
                     "Edit Profile",
-                    style:
-                    TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(
+                        color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
@@ -226,6 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // ================= STAT CARD =================
   Widget _buildStatCard(IconData icon, String label, String value) {
     return Column(
       children: [
@@ -236,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),

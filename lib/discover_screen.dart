@@ -3,6 +3,7 @@ import 'package:travel_app/detail_screen.dart';
 import 'package:travel_app/profile_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'location_map_screen.dart'; // 🔹 KEEP LOCATION MAP
 
 class DiscoverScreen extends StatefulWidget {
   final Function(Map<String, String>) onFavoriteToggle;
@@ -23,7 +24,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   String searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
 
-  // Firebase instances
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -47,16 +47,17 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     _initializeFirebaseData();
   }
 
-  // Initialize Firebase data
   Future<void> _initializeFirebaseData() async {
     try {
-      // Upload destinations to Firestore if not already present
-      final destinationsSnapshot = await _firestore.collection('destinations').get();
+      final destinationsSnapshot =
+      await _firestore.collection('destinations').get();
 
       if (destinationsSnapshot.docs.isEmpty) {
         for (var destination in allDestinations) {
-          // Use the id from the map as the document ID
-          await _firestore.collection('destinations').doc(destination['id']).set({
+          await _firestore
+              .collection('destinations')
+              .doc(destination['id'])
+              .set({
             'title': destination['title'],
             'image': destination['image'],
             'location': destination['location'],
@@ -69,8 +70,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
   }
 
-  // Save favorite to Firebase
-  Future<void> _saveFavoriteToFirebase(Map<String, String> destination, bool isFavorite) async {
+  Future<void> _saveFavoriteToFirebase(
+      Map<String, String> destination, bool isFavorite) async {
     try {
       final user = _auth.currentUser;
       if (user != null) {
@@ -98,8 +99,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
   }
 
-  // Log user activity to Firebase
-  Future<void> _logUserActivity(String activity, Map<String, dynamic> data) async {
+  Future<void> _logUserActivity(
+      String activity, Map<String, dynamic> data) async {
     try {
       final user = _auth.currentUser;
       if (user != null) {
@@ -123,12 +124,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter by category
     var filteredDestinations = selectedCategory == "All"
         ? allDestinations
-        : allDestinations.where((d) => d["category"] == selectedCategory).toList();
+        : allDestinations
+        .where((d) => d["category"] == selectedCategory)
+        .toList();
 
-    // Filter by search query
     if (searchQuery.isNotEmpty) {
       filteredDestinations = filteredDestinations.where((d) {
         final title = d["title"]?.toLowerCase() ?? "";
@@ -146,30 +147,40 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ================= TOP BAR =================
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text("Los Angeles, CA", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                      Text("Los Angeles, CA",
+                          style:
+                          TextStyle(color: Colors.grey, fontSize: 14)),
                       SizedBox(height: 6),
                       Text("Discover ",
-                          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
+
+                  // 🔥 KEEP LOCATION ICON FUNCTIONALITY
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ProfileScreen()),
+                        MaterialPageRoute(
+                          builder: (context) =>
+                          const LocationMapScreen(),
+                        ),
                       );
                     },
                     child: const CircleAvatar(
                       radius: 20,
                       backgroundColor: Colors.black12,
-                      child: Icon(Icons.notifications, color: Colors.black),
+                      child:
+                      Icon(Icons.location_on, color: Colors.red),
                     ),
                   ),
                 ],
@@ -178,6 +189,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               const SizedBox(height: 25),
 
               TextField(
+                controller: _searchController,
+                onChanged: (val) {
+                  setState(() {
+                    searchQuery = val;
+                  });
+                },
                 decoration: InputDecoration(
                   hintText: "Search places",
                   prefixIcon: const Icon(Icons.search),
@@ -190,6 +207,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
 
               SingleChildScrollView(
@@ -211,6 +229,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
               const SizedBox(height: 25),
 
+              // ================= DESTINATIONS CARDS =================
               if (filteredDestinations.isEmpty)
                 const Center(
                   child: Padding(
@@ -272,31 +291,30 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final selected = selectedCategory == label;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedCategory = label;
-        });
-        // Log category selection to Firebase
+        setState(() => selectedCategory = label);
         _logUserActivity('category_selected', {'category': label});
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? Colors.black : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
-          style: TextStyle(color: selected ? Colors.white : Colors.black, fontSize: 13),
+          style: TextStyle(
+              color: selected ? Colors.white : Colors.black,
+              fontSize: 13),
         ),
       ),
     );
   }
 
-  Widget buildDestinationCard(
-      BuildContext context, Map<String, String> item, bool isFav, bool isHorizontal) {
+  Widget buildDestinationCard(BuildContext context,
+      Map<String, String> item, bool isFav, bool isHorizontal) {
     return GestureDetector(
       onTap: () {
-        // Log destination view to Firebase
         _logUserActivity('destination_viewed', {
           'id': item['id'],
           'title': item['title'],
@@ -343,7 +361,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               child: GestureDetector(
                 onTap: () {
                   widget.onFavoriteToggle(item);
-                  // Save favorite status to Firebase
                   _saveFavoriteToFirebase(item, !isFav);
                   _logUserActivity('favorite_toggled', {
                     'id': item['id'],
